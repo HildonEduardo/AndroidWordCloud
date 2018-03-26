@@ -3,6 +3,7 @@ package net.alhazmy13.wordcloud;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -100,7 +101,12 @@ public class WordCloudView extends WebView {
             sb.append("{\"word\":\"").append(dataSet.get(i).getText());
             sb.append("\",\"size\":\"").append(scale(dataSet.get(i).getWeight()));
             sb.append("\",\"color\":\"");
-            sb.append(getColor()).append("\"}");
+
+            if (dataSet.get(i).getColor() != null && !"".equals(dataSet.get(i).getColor())) {
+                sb.append(dataSet.get(i).getColor()).append("\"}");
+            } else {
+                sb.append(getColor()).append("\"}");
+            }
             if (i < dataSet.size() - 1) {
                 sb.append(",");
             }
@@ -127,10 +133,15 @@ public class WordCloudView extends WebView {
     }
 
     private float scale(int inputY) {
-        float x = inputY - old_min;
-        float y = old_max - old_min;
-        float percent = x / y;
-        return percent * (max - min) + min;
+        if (old_max == old_min && old_max == inputY) {
+            return max / 2;  //half size
+        } else {
+
+            float x = inputY - old_min;
+            float y = old_max - old_min;
+            float percent = x / y;
+            return percent * (max - min) + min;
+        }
     }
 
 
@@ -152,9 +163,9 @@ public class WordCloudView extends WebView {
     }
 
     private String getColor() {
-        if(colors.length == 0)
+        if (colors.length == 0)
             return "0";
-        return "#" + Integer.toHexString(colors[random.nextInt(colors.length-1)]).substring(2);
+        return "#" + Integer.toHexString(colors[random.nextInt(colors.length - 1)]).substring(2);
     }
 
     /**
@@ -170,10 +181,24 @@ public class WordCloudView extends WebView {
     }
 
     public void setScale(int max, int min) {
-        if(min > max){
+        if (min > max) {
             throw new RuntimeException("MIN scale cannot be larger than MAX");
         }
         this.max = max;
         this.min = min;
     }
+
+
+    /**
+     * Enables scroll inside scrollview
+     *
+     * @param event
+     * @return
+     */
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        requestDisallowInterceptTouchEvent(true);
+        return super.onTouchEvent(event);
+    }
+
 }
